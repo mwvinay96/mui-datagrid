@@ -1,6 +1,7 @@
-import { TextField } from "@mui/material";
-import { GridColDef } from "@mui/x-data-grid-pro";
+import { TextField, Tooltip, TooltipProps, styled, tooltipClasses } from "@mui/material";
+import { GridColDef, GridEditInputCell, GridRenderEditCellParams } from "@mui/x-data-grid-pro";
 import { useEffect, useState } from "react";
+import { differenceInCalendarYears } from 'date-fns'
 
 const countryOptions = [
   {
@@ -63,7 +64,12 @@ export const columns: GridColDef[] = [
   { headerName: "Id", field: "id", editable: true, filterable: true },
   { headerName: "User Name", field: "name", editable: true, filterable: true },
   { headerName: "Designation", field: "designation", editable: true },
-  { headerName: "Date of Birth", field: "dob", editable: true, type: "date" },
+  {
+    headerName: "Date of Birth", field: "dob", editable: true, type: "date", preProcessEditCellProps(params) {
+      if (differenceInCalendarYears(new Date(), params.props.value) < 21) { return { ...params.props, error: true } }
+      return { ...params.props, error: false }
+    },
+  },
   {
     headerName: "Country",
     field: "country",
@@ -81,6 +87,8 @@ export const columns: GridColDef[] = [
     },
   },
 ];
+
+
 
 export interface IEmployee {
   id: number;
@@ -118,25 +126,39 @@ export const rowData: IEmployee[] = [
   },
 ];
 
-const EditableCell = (props: any) => {
-  const [value, setValue] = useState(props.formattedValue);
+const StyledTooltip = styled(({ className, ...props }: TooltipProps) => (
+  <Tooltip {...props} classes={{ popper: className }} />
+))(({ theme }) => ({
+  [`& .${tooltipClasses.tooltip}`]: {
+    backgroundColor: theme.palette.error.main,
+    color: theme.palette.error.contrastText,
+  },
+}));
 
-  useEffect(() => {}, []);
+function renderEditAge(params: GridRenderEditCellParams) {
+  return <NameEditInputCell {...params} />;
+}
+
+function NameEditInputCell(props: GridRenderEditCellParams) {
+  const { error } = props;
 
   return (
-    <TextField
-      value={value}
-      placeholder={`Please enter ${props.field}`}
-      onChange={(event) => {
-        console.log("onChangeEvent");
-      }}
-      onKeyDown={(event) => {
-        console.log(event);
-        if (event.code === "Space") {
-          setValue(value + " ");
-          event.stopPropagation();
-        }
-      }}
-    />
+    <StyledTooltip open={!!error} title={error}>
+      <GridEditInputCell {...props} />
+    </StyledTooltip>
   );
-};
+}
+
+
+
+function validateName(username: string): Promise<boolean> {
+  const existingUsers = rows.map((row) => row.name.toLowerCase());
+
+  return new Promise<any>((resolve) => {
+    promiseTimeout = setTimeout(() => {
+      const exists = existingUsers.includes(username.toLowerCase());
+      resolve(exists ? `${username} is already taken.` : null);
+    }, Math.random() * 500 + 100); // simulate network latency
+  });
+}
+
