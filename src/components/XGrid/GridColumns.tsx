@@ -1,7 +1,10 @@
-import { TextField, Tooltip, TooltipProps, styled, tooltipClasses } from "@mui/material";
+import { Autocomplete, TextField, Tooltip, TooltipProps, styled, tooltipClasses } from "@mui/material";
 import { GridColDef, GridEditInputCell, GridRenderEditCellParams } from "@mui/x-data-grid-pro";
-import { useEffect, useState } from "react";
 import { differenceInCalendarYears } from 'date-fns'
+import { ChangeEvent, useEffect, useState } from "react";
+import { AutocompleteEditInputCell } from "./AutoCompleteXGridCell";
+import { GridApiPro } from '@mui/x-data-grid-pro/models/gridApiPro'
+
 
 const countryOptions = [
   {
@@ -21,7 +24,7 @@ const countryOptions = [
   },
 ];
 
-const cityOptions = [
+export const cityOptions = [
   {
     id: 1,
     label: "Bengaluru",
@@ -81,10 +84,20 @@ export const columns: GridColDef[] = [
     headerName: "City",
     field: "city",
     editable: true,
-    type: "singleSelect",
-    valueOptions(params) {
-      return cityOptions.filter((e) => params.row?.country === e.country);
-    },
+    width: 500,
+    flex: 1,
+    // type: 'singleSelect',
+    // valueOptions: (param) => cityOptions.filter(e => e.country === param.row?.country)
+    // renderCell: (params) => (
+    //   <TextField value={params.value} placeholder={'city'} onClick={e => apiRef.current.startCellEditMode(params)} />
+    // ),
+    renderEditCell: (params) =>
+      <AutocompleteEditInputCell
+        params={params}
+        options={cityOptions.filter(e => e.country === params.row?.country)}
+        multiple={false}
+        freeSolo={false}
+      />
   },
 ];
 
@@ -161,4 +174,6 @@ function validateName(username: string): Promise<boolean> {
     }, Math.random() * 500 + 100); // simulate network latency
   });
 }
+
+
 

@@ -2,12 +2,12 @@ import Box from "@mui/material/Box";
 import {
   DataGridPro,
   GridToolbar,
-  GRID_CHECKBOX_SELECTION_COL_DEF,
 } from "@mui/x-data-grid-pro";
-import { IEmployee, columns, rowData } from "./GridColumns";
-import { Grid } from "@mui/material";
+import { IEmployee, cityOptions, columns, rowData } from "./GridColumns";
+import { Autocomplete, Grid, TextField } from "@mui/material";
 import { useDemoData } from "@mui/x-data-grid-generator";
-import React, { useState } from "react";
+import { useState } from "react";
+import { useGridApiRef } from '@mui/x-data-grid-pro'
 
 export default function DataGridProDemo() {
   const { data } = useDemoData({
@@ -17,11 +17,13 @@ export default function DataGridProDemo() {
   });
 
   const [value, setValue] = useState<IEmployee>();
+  const apiRef = useGridApiRef();
 
   return (
     <Box sx={{ maxHeight: "200px", width: "100%" }}>
       <Grid container item sx={{ padding: "10px 20px" }}>
         <DataGridPro
+          apiRef={apiRef}
           processRowUpdate={(newRow: IEmployee, oldRow: IEmployee) => {
             setValue(newRow);
             return newRow;
@@ -34,7 +36,7 @@ export default function DataGridProDemo() {
               },
             },
           }}
-          components={{ Toolbar: GridToolbar }}
+          slotProps={{ toolbar: GridToolbar }}
           onProcessRowUpdateError={(error) => console.log(error)}
           columns={columns}
           rows={rowData}
@@ -47,7 +49,15 @@ export default function DataGridProDemo() {
           pageSizeOptions={[1, 2, 3, 100]}
         />
       </Grid>
-      <Grid item>{JSON.stringify(value)}</Grid>
+      <Grid item sx={{ height: '50px' }}>{JSON.stringify(value)}</Grid>
+      <Grid item sx={{ height: '50px' }}>
+        <Autocomplete
+          options={cityOptions}
+          fullWidth
+          autoHighlight
+          renderInput={params => <TextField {...params} />}
+        />
+      </Grid>
     </Box>
   );
 }
